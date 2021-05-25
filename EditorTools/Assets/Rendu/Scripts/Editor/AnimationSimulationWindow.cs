@@ -9,8 +9,8 @@ public class AnimationSimulationWindow : EditorWindow
     bool myBool = true;
     float myFloat = 1.23f;
 
-    public string[] options;
     public Animator[] animatorsList;
+    public AnimationClip[] animations;
 
     [MenuItem("Window/Animation Simluation Window")]
 
@@ -30,6 +30,15 @@ public class AnimationSimulationWindow : EditorWindow
         for (int i = 0; i < animatorsList.Length; i++)
         {
             animatorsList[i] = (Animator)EditorGUILayout.ObjectField("Element " + i + " :", animatorsList[i], typeof(Animator), true);
+        }
+
+        for(int i = 0; i < animations.Length; i++)
+        {
+            for(int j = 0; j < animatorsList[i].runtimeAnimatorController.animationClips.Length; j++)
+            {
+                animations[i] = animatorsList[i].runtimeAnimatorController.animationClips[j];
+            }
+            animations[i] = (AnimationClip)EditorGUILayout.ObjectField("Element " + i + " :", animations[i], typeof(AnimationClip), true);
         }
 
         #endregion
