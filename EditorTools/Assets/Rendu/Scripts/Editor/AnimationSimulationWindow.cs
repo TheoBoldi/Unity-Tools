@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
@@ -18,7 +19,7 @@ public class AnimationSimulationWindow : EditorWindow
     float _lastEditorTime = 0f;
     bool _isSimulatingAnimation = false;
 
-    bool groupEnabled;
+    bool groupEnabled = true;
     bool animationLooping = true;
     float animationSampler = 0f;
 
@@ -43,7 +44,7 @@ public class AnimationSimulationWindow : EditorWindow
     void OnGUI()
     {
         #region Main objectives
-        GUILayout.Label("Animatons selection", EditorStyles.boldLabel);
+        GUILayout.Label("Animations selection", EditorStyles.boldLabel);
         animators = GameObject.FindObjectsOfType<Animator>();
         optionsAnimators = new string[animators.Length];
         animations = new AnimationClip[animators[indexAnimators].runtimeAnimatorController.animationClips.Length];
@@ -54,15 +55,16 @@ public class AnimationSimulationWindow : EditorWindow
             optionsAnimators[i] = animators[i].ToString();
         }
 
-        indexAnimators = EditorGUILayout.Popup(indexAnimators, optionsAnimators);
+        indexAnimators = EditorGUILayout.Popup("Animators list :",indexAnimators, optionsAnimators);
 
         for (int i = 0; i < animators[indexAnimators].runtimeAnimatorController.animationClips.Length; i++)
         {
             animations[i] = animators[indexAnimators].runtimeAnimatorController.animationClips[i];
             optionsAnimations[i] = animations[i].ToString();
+            indexAnimations = 0;
         }
 
-        indexAnimations = EditorGUILayout.Popup(indexAnimations, optionsAnimations);
+        indexAnimations = EditorGUILayout.Popup("Animations list :", indexAnimations, optionsAnimations);
 
         if (!_isSimulatingAnimation)
         {
@@ -77,6 +79,11 @@ public class AnimationSimulationWindow : EditorWindow
             {
                 animationLooping = false;
                 StopAnimSimulation();
+            }
+
+            if (GUILayout.Button("Pause"))
+            {
+                //TODO: Pause anim
             }
         }
         #endregion
