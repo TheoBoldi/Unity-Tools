@@ -9,8 +9,13 @@ public class AnimationSimulationWindow : EditorWindow
     bool myBool = true;
     float myFloat = 1.23f;
 
-    public Animator[] animatorsList;
-    public AnimationClip[] animations;
+    public Animator[] animators = new Animator[] { };
+    public string[] optionsAnimators = new string[] { };
+    public int indexAnimators = 0;
+
+    public AnimationClip[] animations = new AnimationClip[] { };
+    public string[] optionsAnimations = new string[] { };
+    public int indexAnimations = 0;
 
     [MenuItem("Window/Animation Simluation Window")]
 
@@ -19,27 +24,34 @@ public class AnimationSimulationWindow : EditorWindow
         EditorWindow.GetWindow(typeof(AnimationSimulationWindow));
     }
 
+    private void Awake()
+    {
+        
+    }
+
     void OnGUI()
     {
         #region animatorlist
         GUILayout.Label("Animators List", EditorStyles.boldLabel);
-        animatorsList = GameObject.FindObjectsOfType<Animator>();
+        animators = GameObject.FindObjectsOfType<Animator>();
+        optionsAnimators = new string[animators.Length];
+        animations = new AnimationClip[animators[indexAnimators].runtimeAnimatorController.animationClips.Length];
+        optionsAnimations = new string[animations.Length];
 
-        string count = EditorGUILayout.TextField("Number of elements :", animatorsList.Length.ToString());
-
-        for (int i = 0; i < animatorsList.Length; i++)
+        for (int i = 0; i < animators.Length; i++)
         {
-            animatorsList[i] = (Animator)EditorGUILayout.ObjectField("Element " + i + " :", animatorsList[i], typeof(Animator), true);
+            optionsAnimators[i] = animators[i].ToString();
         }
 
-        for(int i = 0; i < animations.Length; i++)
+        indexAnimators = EditorGUILayout.Popup(indexAnimators, optionsAnimators);
+
+        for(int i = 0; i < animators[indexAnimators].runtimeAnimatorController.animationClips.Length; i++)
         {
-            for(int j = 0; j < animatorsList[i].runtimeAnimatorController.animationClips.Length; j++)
-            {
-                animations[i] = animatorsList[i].runtimeAnimatorController.animationClips[j];
-            }
-            animations[i] = (AnimationClip)EditorGUILayout.ObjectField("Element " + i + " :", animations[i], typeof(AnimationClip), true);
+            animations[i] = animators[indexAnimators].runtimeAnimatorController.animationClips[i];
+            optionsAnimations[i] = animations[i].ToString();
         }
+
+        indexAnimations = EditorGUILayout.Popup(indexAnimations, optionsAnimations);
 
         #endregion
 
