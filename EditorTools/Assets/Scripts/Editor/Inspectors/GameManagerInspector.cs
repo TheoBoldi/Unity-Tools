@@ -15,22 +15,8 @@ public class GameManagerInspector : Editor
         SerializedProperty gameDataProperty = serializedObject.FindProperty("gameData");
         if (null == gameDataProperty.objectReferenceValue) {
             serializedObject.Update();
-            gameDataProperty.objectReferenceValue = _FindGameDataInProject();
+            gameDataProperty.objectReferenceValue = EditorUtils.FindGameDataIntoProject();
             serializedObject.ApplyModifiedProperties();
-        }
-    }
-
-    private GameData _FindGameDataInProject()
-    {
-        string[] fileGuidsArr = AssetDatabase.FindAssets("t:" + typeof(GameData));
-        if (fileGuidsArr.Length > 0) {
-            string assetPath = AssetDatabase.GUIDToAssetPath(fileGuidsArr[0]);
-            return AssetDatabase.LoadAssetAtPath<GameData>(assetPath);
-        } else {
-            GameData gameData = ScriptableObject.CreateInstance<GameData>();
-            AssetDatabase.CreateAsset(gameData, "Assets/GameData.asset");
-            AssetDatabase.SaveAssets();
-            return gameData;
         }
     }
 
