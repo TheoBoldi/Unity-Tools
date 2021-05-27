@@ -21,6 +21,8 @@ public class AnimationSimulationWindow : EditorWindow
 
     bool groupEnabled = true;
     bool animationLooping = true;
+    bool wasLooping = false;
+    bool isPaused = false;
     float animationSampler = 0f;
 
     [MenuItem("Window/Animation Simluation Window")]
@@ -37,6 +39,7 @@ public class AnimationSimulationWindow : EditorWindow
             Selection.activeObject = animators[indexAnimators];
             EditorGUIUtility.PingObject(animators[indexAnimators]);
             SceneView.lastActiveSceneView.FrameSelected();
+            indexAnimations = 0;
             checkAnimatorIndex = indexAnimators;
         }
     }
@@ -47,8 +50,6 @@ public class AnimationSimulationWindow : EditorWindow
         GUILayout.Label("Animations selection", EditorStyles.boldLabel);
         animators = GameObject.FindObjectsOfType<Animator>();
         optionsAnimators = new string[animators.Length];
-        animations = new AnimationClip[animators[indexAnimators].runtimeAnimatorController.animationClips.Length];
-        optionsAnimations = new string[animations.Length];
 
         for (int i = 0; i < animators.Length; i++)
         {
@@ -57,11 +58,13 @@ public class AnimationSimulationWindow : EditorWindow
 
         indexAnimators = EditorGUILayout.Popup("Animators list :",indexAnimators, optionsAnimators);
 
+        animations = new AnimationClip[animators[indexAnimators].runtimeAnimatorController.animationClips.Length];
+        optionsAnimations = new string[animations.Length];
+
         for (int i = 0; i < animators[indexAnimators].runtimeAnimatorController.animationClips.Length; i++)
         {
             animations[i] = animators[indexAnimators].runtimeAnimatorController.animationClips[i];
             optionsAnimations[i] = animations[i].ToString();
-            indexAnimations = 0;
         }
 
         indexAnimations = EditorGUILayout.Popup("Animations list :", indexAnimations, optionsAnimations);
@@ -78,12 +81,16 @@ public class AnimationSimulationWindow : EditorWindow
             if (GUILayout.Button("Stop"))
             {
                 animationLooping = false;
+                wasLooping = true;
                 StopAnimSimulation();
             }
 
             if (GUILayout.Button("Pause"))
             {
-                //TODO: Pause anim
+                if (!isPaused)
+                    isPaused = true;
+                else
+                    isPaused = false;
             }
         }
         #endregion
@@ -99,6 +106,12 @@ public class AnimationSimulationWindow : EditorWindow
     private void OnEditorUpdate()
     {
         float animTime = Time.realtimeSinceStartup - _lastEditorTime;
+
+        if (isPaused)
+        {
+            animTime = _lastEditorTime;
+        }
+
         if (animTime >= animations[indexAnimations].length)
         {
             StopAnimSimulation();
@@ -132,6 +145,13 @@ public class AnimationSimulationWindow : EditorWindow
             AnimationMode.StopAnimationMode();
             EditorApplication.update -= OnEditorUpdate;
             _isSimulatingAnimation = false;
+            isPaused = false;
+
+            if (wasLooping)
+            {
+                animationLooping = true;
+                wasLooping = false;
+            }
         }
     }
 }
