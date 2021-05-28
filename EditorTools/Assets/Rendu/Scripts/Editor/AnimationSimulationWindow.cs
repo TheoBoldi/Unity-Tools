@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
+using Unity.EditorCoroutines.Editor;
 
 public class AnimationSimulationWindow : EditorWindow
 {
@@ -20,9 +21,15 @@ public class AnimationSimulationWindow : EditorWindow
     bool _isSimulatingAnimation = false;
 
     bool groupEnabled = true;
+
     bool animationLooping = true;
     bool wasLooping = false;
+
     bool isPaused = false;
+
+    float animationSpeed = 1f;
+    float delayBetweenLoops = 0f;
+
     float animationSampler = 0f;
 
     [MenuItem("Window/Animation Simluation Window")]
@@ -36,10 +43,10 @@ public class AnimationSimulationWindow : EditorWindow
     {
         if (indexAnimators != checkAnimatorIndex)
         {
+            indexAnimations = 0;
             Selection.activeObject = animators[indexAnimators];
             EditorGUIUtility.PingObject(animators[indexAnimators]);
             SceneView.lastActiveSceneView.FrameSelected();
-            indexAnimations = 0;
             checkAnimatorIndex = indexAnimators;
         }
     }
@@ -98,14 +105,16 @@ public class AnimationSimulationWindow : EditorWindow
         #region Optional objectives
         groupEnabled = EditorGUILayout.BeginToggleGroup("Optional Settings", groupEnabled);
         animationLooping = EditorGUILayout.Toggle("Loop animation", animationLooping);
-        animationSampler = EditorGUILayout.Slider("Animation sampler", animationSampler, 0, animations[indexAnimations].length);
+        delayBetweenLoops = EditorGUILayout.FloatField("Delay between loop", delayBetweenLoops);
+        animationSpeed = EditorGUILayout.Slider("Animation speed", animationSpeed, 0, 10);
+        //animationSampler = EditorGUILayout.Slider("Animation sampler", animationSampler, 0, animations[indexAnimations].length);
         EditorGUILayout.EndToggleGroup();
         #endregion
     }
 
     private void OnEditorUpdate()
     {
-        float animTime = Time.realtimeSinceStartup - _lastEditorTime;
+        float animTime = (Time.realtimeSinceStartup - _lastEditorTime) * animationSpeed;
 
         if (isPaused)
         {
@@ -138,7 +147,14 @@ public class AnimationSimulationWindow : EditorWindow
     {
         if (animationLooping)
         {
-            StartAnimSimulation();
+            if(delayBetweenLoops <= 0)
+            {
+                StartAnimSimulation();
+            }
+            else
+            {
+                EditorCoroutineUtility.StartCoroutine(DelayLoop(), this);
+            }
         }
         else
         {
@@ -147,11 +163,17 @@ public class AnimationSimulationWindow : EditorWindow
             _isSimulatingAnimation = false;
             isPaused = false;
 
-            if (wasLooping)
+            if (wasLooping && !animationLooping)
             {
                 animationLooping = true;
                 wasLooping = false;
             }
         }
+    }
+
+    public IEnumerator DelayLoop()
+    {
+        yield return new EditorWaitForSeconds(delayBetweenLoops);
+        StartAnimSimulation();
     }
 }
