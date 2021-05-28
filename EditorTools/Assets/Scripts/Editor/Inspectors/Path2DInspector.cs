@@ -36,6 +36,9 @@ public class Path2DInspector : Editor
     public override void OnInspectorGUI()
     {
         serializedObject.Update();
+
+        DrawPropertiesExcluding(serializedObject, new string[] { "points" });
+
         _pointsReorderableList.DoLayoutList();
         serializedObject.ApplyModifiedProperties();
     }
@@ -47,22 +50,26 @@ public class Path2DInspector : Editor
 
         //Move points
         for (int i = 0; i < path2D.points.Length; ++i) {
+            EditorGUI.BeginChangeCheck();
             Vector2 point = path2D.points[i];
             point = Handles.PositionHandle(point, Quaternion.identity);
-            path2D.points[i] = point;
+            if (EditorGUI.EndChangeCheck()) {
+                Undo.RecordObject(path2D, "Edit point");
+                path2D.points[i] = point;
+            }
         }
 
         //Draw points
-        Handles.color = Color.yellow;
-        for (int i = 0; i < path2D.points.Length; ++i) {
-            Vector2 point = path2D.points[i];
-            Handles.DrawSolidDisc(point, Vector3.forward, 0.1f);
-            Handles.Label(point + new Vector2(0f, -0.1f), (i + 1).ToString(), EditorStyles.boldLabel);
-            if (i > 0) {
-                Vector2 previousPoint = path2D.points[i - 1];
-                Handles.DrawLine(previousPoint, point);
-            }
-        }
+        //Handles.color = Color.yellow;
+        //for (int i = 0; i < path2D.points.Length; ++i) {
+        //    Vector2 point = path2D.points[i];
+        //    Handles.DrawSolidDisc(point, Vector3.forward, 0.1f);
+        //    Handles.Label(point + new Vector2(0f, -0.1f), (i + 1).ToString(), EditorStyles.boldLabel);
+        //    if (i > 0) {
+        //        Vector2 previousPoint = path2D.points[i - 1];
+        //        Handles.DrawLine(previousPoint, point);
+        //    }
+        //}
 
         //Disable Scene Interactions
         if (Event.current.type == EventType.Layout) {
